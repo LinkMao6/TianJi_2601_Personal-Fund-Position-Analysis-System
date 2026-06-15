@@ -40,44 +40,74 @@
 
 ## 环境要求
 
-- Windows 10/11
-- Python 3.10 或更高版本
+- Windows 10/11（推荐 64 位）
+- Python 3.10 或更高版本（项目当前主要按 Python 3.10 验证）
+- Python 安装中包含 Tkinter
 - 可访问 xalpha 所依赖的公开基金数据源
+- 建议预留至少 500 MB 磁盘空间，用于虚拟环境、净值缓存和分析输出
 
-GUI 使用 Python 标准库中的 Tkinter。项目主要按 Windows 桌面环境开发，打开输出目录和报告等功能使用了 Windows 的 `os.startfile()`。
+GUI 使用 Python 标准库中的 Tkinter。项目主要按 Windows 桌面环境开发，打开输出目录和报告等功能使用了 Windows 的 `os.startfile()`，因此其他操作系统目前不是正式支持范围。
+
+安装 Python 时建议从 [Python 官网](https://www.python.org/downloads/windows/) 获取安装程序，并勾选：
+
+- `Add Python to PATH`
+- `pip`
+- `tcl/tk and IDLE`
+
+安装后可以检查版本和 Tkinter：
+
+```powershell
+python --version
+python -m tkinter
+```
+
+第二条命令正常时会打开一个 Tkinter 测试窗口，关闭即可。如果提示找不到 `tkinter`，需要重新安装带 Tcl/Tk 组件的 Python。
 
 ## 快速开始
 
 ### 1. 获取代码
 
 ```bash
-git clone https://github.com/你的用户名/你的仓库名.git
-cd 你的仓库名
+git clone https://github.com/LinkMao6/TianJi_2601_Personal-Fund-Position-Analysis-System.git
+cd TianJi_2601_Personal-Fund-Position-Analysis-System
 ```
+
+如果没有安装 Git，也可以在 GitHub 仓库页面选择 `Code → Download ZIP`，解压后进入项目目录。
 
 ### 2. 创建虚拟环境
 
-PowerShell：
+在项目根目录打开 PowerShell：
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
-如果 PowerShell 阻止脚本执行，也可以直接使用虚拟环境中的 Python：
+激活成功后，命令行开头通常会显示 `(.venv)`。
+
+如果 PowerShell 提示脚本执行被禁止，可以仅为当前窗口临时调整策略：
 
 ```powershell
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1
+```
+
+也可以不激活虚拟环境，后续命令直接使用：
+
+```powershell
+.\.venv\Scripts\python.exe
 ```
 
 ### 3. 安装依赖
 
+激活虚拟环境后执行：
+
 ```powershell
 python -m pip install --upgrade pip
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
-核心依赖：
+`requirements.txt` 包含主程序运行所需的固定版本：
 
 ```text
 xalpha==0.12.3
@@ -86,7 +116,41 @@ numpy==1.26.4
 matplotlib==3.10.9
 ```
 
-### 4. 启动桌面程序
+依赖用途：
+
+| 依赖 | 用途 |
+|---|---|
+| `xalpha` | 获取基金信息、历史单位净值和累计净值 |
+| `pandas` | 表格、CSV 和时间序列处理 |
+| `numpy` | 数值计算 |
+| `matplotlib` | GUI 内嵌图表和 PNG 图表输出 |
+| `tkinter` | 桌面 GUI，由 Python 标准库提供，不通过 pip 安装 |
+
+xalpha 还会安装其自身依赖。请优先使用 `requirements.txt` 中的固定版本，不建议在首次运行前单独升级其中某个核心包，否则可能收获一个很新、但彼此不太认识的依赖组合。
+
+### 4. 验证安装
+
+执行：
+
+```powershell
+python -c "import xalpha, pandas, numpy, matplotlib, tkinter; print('环境安装成功')"
+```
+
+如果输出：
+
+```text
+环境安装成功
+```
+
+说明主程序依赖已经可以导入。
+
+还可以检查项目模块：
+
+```powershell
+python -c "import main, ui_app, run_portfolio; print('项目模块导入成功')"
+```
+
+### 5. 启动桌面程序
 
 ```powershell
 python main.py
@@ -94,13 +158,86 @@ python main.py
 
 `main.py` 是统一 GUI 入口，`python ui_app.py` 仍可兼容启动。
 
-### 5. 命令行运行完整分析
+如果没有激活虚拟环境：
+
+```powershell
+.\.venv\Scripts\python.exe main.py
+```
+
+### 6. 命令行运行完整分析
 
 ```powershell
 python run_portfolio.py
 ```
 
-空仓库首次启动后，请先在“基金池管理”中添加基金，再录入持仓或买入批次。没有基金和持仓时，程序可以启动，但分析页面不会凭空变出一个投资组合，这一点算是它为数不多的克制。
+命令行入口适合在已经配置基金池和持仓后批量生成分析结果。空仓库首次启动后，请先使用 GUI 添加基金和录入持仓，否则命令行分析没有可处理的数据。
+
+### 7. 可选工具依赖
+
+`tools/` 目录不是主程序运行所必需的。只有在使用截图和 Word 文档生成脚本时，才需要额外安装：
+
+```powershell
+python -m pip install Pillow python-docx
+```
+
+| 可选依赖 | 对应工具 |
+|---|---|
+| `Pillow` | `tools/capture_manual_screenshots.py` |
+| `python-docx` | `tools/generate_*_doc.py` |
+
+不安装这两个包不会影响 `python main.py`、组合分析、回测或策略建议。
+
+## 安装问题排查
+
+### `python` 命令不存在
+
+重新安装 Python 并勾选 `Add Python to PATH`，或使用 Python Launcher：
+
+```powershell
+py -3.10 -m venv .venv
+```
+
+### PowerShell 无法激活虚拟环境
+
+使用当前进程临时策略：
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+```
+
+或者始终直接调用：
+
+```powershell
+.\.venv\Scripts\python.exe main.py
+```
+
+### 缺少 `tkinter`
+
+`tkinter` 不能通过 `pip install tkinter` 正确补齐。请修改或重新安装 Python，并启用 Tcl/Tk 组件。
+
+### xalpha 安装或导入失败
+
+先确认正在使用虚拟环境中的 Python：
+
+```powershell
+python -c "import sys; print(sys.executable)"
+python -m pip show xalpha
+```
+
+必要时重新安装固定版本：
+
+```powershell
+python -m pip install --force-reinstall xalpha==0.12.3
+```
+
+### 无法获取基金数据
+
+xalpha 依赖第三方公开数据源。网络、代理、TLS、上游接口调整或访问频率限制都可能造成失败。
+
+- 首次使用且没有缓存时，远程失败会导致对应基金无法分析。
+- 已有真实缓存时，程序会回退到缓存并显示数据来源和净值日期。
+- 缓存可用不代表数据已经更新到当天，请查看“数据中心”和净值截止日期。
+- 不要把代理账号、Cookie、Token 或其他凭据写入源码后提交到 GitHub。
 
 ## 首次运行
 
