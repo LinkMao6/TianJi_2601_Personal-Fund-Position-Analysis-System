@@ -1,0 +1,33 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Editors and local assistants
+.claude/
+.vscode/
+.idea/
+
+# Personal portfolio data
+portfolio_data.json
+portfolio_data*.bak
+portfolio_data.backup_*.json
+
+# Runtime data and generated outputs
+data/
+data_xalpha/
+logs/
+output/
+portfolio_report.md
+
+# Local notebooks and document artifacts
+*.ipynb
+docs/
+*.docx
+*.pdf
+~$*
+
+# Temporary files
+*.tmp
+*.log
